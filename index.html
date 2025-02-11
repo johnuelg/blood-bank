@@ -2,31 +2,25 @@
 <head>
     <title>Blood Bank</title>
     <link rel="stylesheet" href="style/style.css" type="text/css" media="screen" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-	<meta charset="utf-8">
+    <meta charset="utf-8">
 </head>
 
 <body>
-	
 <div id="main-wrapper">
     <h1></h1>
     <div class="subheader">Select Date</div>
     <div class="dropdown">
-      <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+      <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
         <span id="dropdown_title">Dropdown</span>
         <span class="caret"></span>
       </button>
-      <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-      </ul>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenu1"></ul>
     </div>
-    
-	<div id="chart"></div>
-    
-   
-</div><!-- @end #main-wrapper -->
-
+    <div id="chart"></div>
+</div>
 
 <script src="js/d3-3-5-5.min.js"></script>
 
@@ -34,16 +28,14 @@
 var DATA_FILE_LOC = 'data/bbk.tsv';
 var USER_COUNTRY = 'Jan 26 to Feb 1';
 
+// Reduced canvas size
 var margin = {top: 16, right: 0, bottom: 0, left: 0},
-    width = 720 - margin.left - margin.right,
-    height = 600 - margin.top - margin.bottom;
-    
-var node_radius = 13,
+    width = 300 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+
+var node_radius = 8,  // Reduced node size
     padding = 1,
-    cluster_padding = 1,
-    num_nodes = 100;
-
-
+    cluster_padding = 1;
 
 var svg = d3.select("#chart").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -51,38 +43,43 @@ var svg = d3.select("#chart").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////// Create filter ///////////////////////////////
-///////////////////////////////////////////////////////////////////////////	
-
-//SVG filter for the gooey effect
-//Code taken from http://tympanus.net/codrops/2015/03/10/creative-gooey-effects/
-var defs = svg.append("defs");
-var filter = defs.append("filter").attr("id","gooeyCodeFilter");
-filter.append("feGaussianBlur")
-	.attr("in","SourceGraphic")
-	.attr("stdDeviation","10")
-	//to fix safari: http://stackoverflow.com/questions/24295043/svg-gaussian-blur-in-safari-unexpectedly-lightens-image
-	.attr("color-interpolation-filters","sRGB") 
-	.attr("result","blur");
-filter.append("feColorMatrix")
-	.attr("in","blur")
-	.attr("mode","matrix")
-	.attr("values","1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7")
-	.attr("result","gooey");
-
-// Foci
+// Adjusted foci positions for smaller canvas
 var color = "#8B0000";
 var color2="#FFD700";
-var color3 = "#ADD8E6"
-var color4 = "#FF0000"
+var color3 = "#ADD8E6";
+var color4 = "#FF0000";
 var foci = {
-    "plt": { x: 150, y: 150, color: color2, label: "Platelets" },
-    "ffp": { x: 400, y: 150, color: color3, label: "FFP/Cryo)" },
-    "prbcs": { x: 150, y: 400, color: color, label: "Red Blood Cells" },
-    "whole": { x: 400, y: 400, color: color4, label: "Whole Blood" },
+    "plt": { x: 75, y: 75, color: color2, label: "Platelets" },
+    "ffp": { x: 225, y: 75, color: color3, label: "FFP/Cryo" },
+    "prbcs": { x: 75, y: 225, color: color, label: "Red Blood Cells" },
+    "whole": { x: 225, y: 225, color: color4, label: "Whole Blood" },
     "dragger": { x: 0, y: 0, color: color },
 };
+
+// ... rest of the script remains the same until label creation ...
+
+// Modified text labels with smaller font size and adjusted positions
+d3.keys(foci).forEach(function(d) {
+    if (d !== "dragger") {
+        svg.append("text")
+            .attr("class", "header")
+            .style("font-size", "12px")  // Reduced font size
+            .attr("x", foci[d].x)
+            .attr("y", foci[d].y - 30)  // Adjusted label position
+            .attr("text-anchor", "middle")
+            .text(foci[d].label);
+
+        svg.append("text")
+            .attr("id", "counter" + d)
+            .attr("class", "counter")
+            .style("font-size", "14px")  // Reduced counter size
+            .attr("data-choice", d)
+            .attr("x", foci[d].x)
+            .attr("y", foci[d].y)
+            .attr("text-anchor", "middle")
+            .text(country_data[USER_COUNTRY][d]);
+    }
+});
 
 var root;
 
@@ -306,35 +303,3 @@ d3.keys(foci).forEach(function(d) {
       };
     }    
 }); // @end d3.tsv()
-
-
-
-
-
-
-
-
-function type(d, i) {
-	
-	d3.keys(d).map(function(key) {
-        if (key != "country") {
-            d[key] = +d[key];
-        }
-	});
-	return d;
-
-}
-    
-</script>
-
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-865100-4', 'auto');
-  ga('send', 'pageview');
-
-</script>
-</body>
